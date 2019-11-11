@@ -94,10 +94,10 @@ class FirebaseDBListener {
         .where((e) =>
             snapShotValTest(e) && e.snapshot.key != UserBloc().getCurrUser().id)
         .listen((event) {
-      print('key ' +
+      /*print('key ' +
           event.snapshot.key +
           ' value ' +
-          event.snapshot.value.toString());
+          event.snapshot.value.toString());*/
       UserModel userModel = UserModel.fromJson(event.snapshot.value);
       if (userModel.id != UserBloc().getCurrUser().id) {
         GameController().setOtherPlayerDetails(userModel);
@@ -110,13 +110,12 @@ class FirebaseDBListener {
         .onChildRemoved
         .where((e) => snapShotValTest(e))
         .listen((event) {
-      print('key ' +
+     /* print('key ' +
           event.snapshot.key +
           ' value ' +
-          event.snapshot.value.toString());
-          UserModel user = UserModel.fromJson(event.snapshot.value);
-      addToController(
-          FirebaseDBModel(FirebaseDBModel.USER_LEFT, user));
+          event.snapshot.value.toString());*/
+      UserModel user = UserModel.fromJson(event.snapshot.value);
+      addToController(FirebaseDBModel(FirebaseDBModel.USER_LEFT, user));
     });
   }
 
@@ -127,10 +126,10 @@ class FirebaseDBListener {
         .onChildAdded
         .where((e) => snapShotValTest(e))
         .listen((event) {
-      print('key ' +
+      /*print('key ' +
           event.snapshot.key +
           ' value ' +
-          event.snapshot.value.toString());
+          event.snapshot.value.toString());*/
       RoomModel roomModel = RoomModel.fromJson(event.snapshot.value);
       _list.add(roomModel);
       addToController(FirebaseDBModel(FirebaseDBModel.ROOM, _list));
@@ -140,10 +139,10 @@ class FirebaseDBListener {
         .onChildRemoved
         .where((e) => snapShotValTest(e))
         .listen((event) {
-      print('key ' +
+     /* print('key ' +
           event.snapshot.key +
           ' value ' +
-          event.snapshot.value.toString());
+          event.snapshot.value.toString());*/
       RoomModel roomModel = RoomModel.fromJson(event.snapshot.value);
       _list.removeWhere((item) => item.id == roomModel.id);
 
@@ -160,14 +159,16 @@ class FirebaseDBListener {
           .onValue
           .where((e) => snapShotValTest(e))
           .listen((event) {
-        print(' room changes key ' +
+       /* print(' room changes key ' +
             event.snapshot.key +
             ' value ' +
-            event.snapshot.value.toString());
+            event.snapshot.value.toString());*/
         RoomModel roomModel = RoomModel.fromJson(event.snapshot.value);
-        GameController().setRoomDetails(roomModel);
-        addToController(
-            FirebaseDBModel(FirebaseDBModel.ROOM_DETAILS, roomModel));
+        if (roomModel.status != RoomModel.GAME_WON) {
+          GameController().setRoomDetails(roomModel);
+          addToController(
+              FirebaseDBModel(FirebaseDBModel.ROOM_DETAILS, roomModel));
+        }
       });
     }
   }
@@ -179,10 +180,10 @@ class FirebaseDBListener {
         .onChildChanged
         .where((e) => snapShotValTest(e))
         .listen((event) {
-      print('key ' +
+      /*print('key ' +
           event.snapshot.key +
           ' value ' +
-          event.snapshot.value.toString());
+          event.snapshot.value.toString());*/
       String turnId;
       if (event.snapshot.value is String) {
         turnId = event.snapshot.value;

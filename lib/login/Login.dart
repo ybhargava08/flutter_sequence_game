@@ -35,7 +35,7 @@ class _LoginState extends State<Login> {
     _googleUser ??= await _googleSignIn.signIn();
     if (_googleUser != null) {
       UserBloc().setCurrUser(_googleUser);
-      WebsocketBloc().connect();
+     // WebsocketBloc().connect();
      setState(() {
          _isLoading=false; 
      });

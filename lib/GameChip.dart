@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sequence/blocs/AnimationBloc.dart';
+import 'package:sequence/cards/CardStructure.dart';
 
 class GameChip extends StatefulWidget {
   final String color;
@@ -46,7 +47,8 @@ class _GameChipState extends State<GameChip> {
           ]),
       padding: EdgeInsets.all(3),
       child: Center(
-        child: AnimationBloc().getAssetImage('assets/chips/white-star.png'),
+        child: CardStructure(AnimationBloc.CHIP_STAR_IMG, null,
+                  null,null),
       ),
     );
   }

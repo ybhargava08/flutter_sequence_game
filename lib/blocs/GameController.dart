@@ -68,7 +68,7 @@ class GameController {
         UserBloc().getCurrUser().email,
         'teal');
     return user;*/
-    return /*UserBloc().getCurrUser()*/null;
+    return UserBloc().getCurrUser();
   }
 
   setRoomDetails(RoomModel model) {
@@ -200,9 +200,13 @@ class GameController {
     if (Navigator.canPop(context)) {
       bool isPopped = Navigator.of(context).pop(data);
       if(isPopped && null!=data) {
-        _handlePopScreenData(data);
+        _handlePopScreenDataWithDelay(data,500);
       }
     }
+  }
+
+  _handlePopScreenDataWithDelay(String data,int delay) async {
+        await Future.delayed(Duration(milliseconds: delay),() => _handlePopScreenData(data));
   }
 
   _handlePopScreenData(String data) async {

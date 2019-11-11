@@ -8,6 +8,7 @@ import 'package:sequence/blocs/GameBloc.dart';
 import 'package:sequence/blocs/GameController.dart';
 import 'package:sequence/blocs/SystemControl.dart';
 import 'package:sequence/blocs/UserBloc.dart';
+import 'package:sequence/cards/CardStructure.dart';
 import 'package:sequence/firebasedb/FirebaseRealtimeDB.dart';
 import 'package:sequence/firebasedb/FirestoreDB.dart';
 import 'package:sequence/model/BlocModel.dart';
@@ -111,7 +112,8 @@ class _BoardCardState extends State<BoardCard>
         } else if (data.type == BlocModel.OTHER_PLAYER_CARD &&
             data.id == _boardCardModel.position &&
             data.value is CardModel) {
-          _placedCardOnBoard(data.value, !data.value.isRemovedJ1, true, false);
+          _placedCardOnBoard(data.value, !data.value.isRemovedJ1,
+              data.value.isRemovedJ1, false);
         }
       });
     }
@@ -162,9 +164,6 @@ class _BoardCardState extends State<BoardCard>
     FirestoreDB().setBoardCard(newModel, !isCardAdd);
 
     _placedCardOnBoard(newModel, isCardAdd, false, true);
-    FirebaseRealtimeDB().setPlayerTurn(
-        GameController().getOtherPlayerDetails().id,
-        GameController().getRoomDetails().id);
   }
 
   _placedCardOnBoard(CardModel model, bool checkForSeqCompletion, bool doJ1Anim,
@@ -175,15 +174,18 @@ class _BoardCardState extends State<BoardCard>
     setState(() {
       _boardCardModel = model;
     });
-    print('other use id ' +
-        GameController().getOtherPlayerDetails().id +
-        ' room id ' +
-        GameController().getRoomDetails().id);
     if (checkForSeqCompletion) {
       CheckSequenceBloc().checkForSequence(model, updateFirebase);
     }
     if (doJ1Anim && !checkForSeqCompletion) {
       _doJ1Anim();
+    }
+    if (!updateFirebase) {
+      String playerId = (model.from == UserBloc().getCurrUser().id)
+          ? GameController().getOtherPlayerDetails().id
+          : UserBloc().getCurrUser().id;
+      FirebaseRealtimeDB()
+          .setPlayerTurn(playerId, GameController().getRoomDetails().id);
     }
   }
 
@@ -235,7 +237,7 @@ class _BoardCardState extends State<BoardCard>
             GameController().showToast('Select a card');
           }
         } else {
-          GameController().showToast('Wait for your chance');
+          GameController().showToast('Wait for your turn');
         }
       },
       child: ScaleTransition(
@@ -243,26 +245,17 @@ class _BoardCardState extends State<BoardCard>
         child: Stack(
           children: <Widget>[
             SizedBox.expand(
-              child: Container(
-                  key: _globalKey,
-                  margin: EdgeInsets.fromLTRB(1, 1, 0, 0),
-                  padding: EdgeInsets.all(2),
-                  decoration: BoxDecoration(
-                      color: _getBgColor(),
-                      borderRadius: BorderRadius.circular(5),
-                      border: Border.all(color: Colors.black, width: 1)),
-                  child: Image.asset(
-                  'assets/cards/' + _boardCardModel.value + '.png',
-                  fit: BoxFit.contain,
-                  color: _getBlendColor(),
-                  colorBlendMode: BlendMode.darken,
-                )),
-                      /*FileFuture(
-                          _boardCardModel.value + '.png',
-                          FirebaseStorageUtil.CARDS,
-                          _getBlendColor(),
-                          BlendMode.darken)),*/
-            ),
+                child: Container(
+              key: _globalKey,
+              margin: EdgeInsets.fromLTRB(1, 1, 0, 0),
+              padding: EdgeInsets.all(2),
+              decoration: BoxDecoration(
+                  color: _getBgColor(),
+                  borderRadius: BorderRadius.circular(5),
+                  border: Border.all(color: Colors.black, width: 1)),
+              child: CardStructure(AnimationBloc.CARD_VAL_IMG, _boardCardModel,
+                  _getBlendColor(), BlendMode.darken),
+            )),
             (_boardCardModel != null &&
                     _boardCardModel.isOnBoard &&
                     _boardCardModel.isChipPlaced &&

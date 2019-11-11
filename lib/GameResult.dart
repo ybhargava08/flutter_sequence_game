@@ -3,6 +3,7 @@ import 'package:sequence/GameScore.dart';
 import 'package:sequence/blocs/AnimationBloc.dart';
 import 'package:sequence/blocs/GameController.dart';
 import 'package:sequence/blocs/SystemControl.dart';
+import 'package:sequence/cards/CardStructure.dart';
 import 'package:sequence/constants/GameConstants.dart';
 import 'package:sequence/model/RoomModel.dart';
 
@@ -69,7 +70,8 @@ class _GameResultState extends State<GameResult>
         height: 300,
         padding: EdgeInsets.all(2),
         decoration: BoxDecoration(borderRadius: BorderRadius.circular(25)),
-        child: AnimationBloc().getAssetImage('assets/images/Winner.png'),
+        child: CardStructure(AnimationBloc.WINNER_IMG, null,
+                  null,null),
       ),
     );
   }

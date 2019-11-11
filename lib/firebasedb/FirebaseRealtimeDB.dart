@@ -96,7 +96,7 @@ class FirebaseRealtimeDB {
       if (isInit && (data.value == null || '' == data.value)) {
         list = List.from(GameConstants.GAME_DECK);
         list.shuffle();
-        /*list = List.generate(108, (i) {
+       /* list = List.generate(108, (i) {
           /* if(i%2==0) {
                return 'J2';
            }else{

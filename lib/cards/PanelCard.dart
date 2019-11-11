@@ -65,7 +65,7 @@ class _PanelCardState extends State<PanelCard> {
           setTranslate(-15);
           GameBloc().setSelectedCard(_panelCardModel);
         }else{
-          GameController().showToast('Wait for your chance');
+          GameController().showToast('Wait for your turn');
         }
       },
       child: Transform.translate(

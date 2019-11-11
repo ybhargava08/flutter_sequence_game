@@ -56,7 +56,7 @@ class GameBloc {
     _indexMap[key] = value;
   }
 
-  CardModel getCardFromMap(String key) {
+  CardModel getCardFromIndexMap(String key) {
     return _indexMap[key];
   }
 

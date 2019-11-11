@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sequence/blocs/AnimationBloc.dart';
+import 'package:sequence/cards/CardStructure.dart';
 import 'package:sequence/model/CardModel.dart';
 
 class BaseCard extends StatelessWidget {
@@ -38,7 +39,8 @@ class BaseCard extends StatelessWidget {
                             fontSize: 25,
                             fontWeight: FontWeight.bold),
                        ))
-                    : AnimationBloc().getAssetImage('assets/cards/' + cardModel.value + '.png'),
+                    : CardStructure(AnimationBloc.CARD_VAL_IMG, cardModel,
+                  null, null),
           ),
     );
   }

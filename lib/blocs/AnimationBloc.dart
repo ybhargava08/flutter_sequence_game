@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sequence/model/CardModel.dart';
 
 class AnimationBloc {
   Map<String, Color> _chipColorMap = Map();
@@ -10,6 +11,11 @@ class AnimationBloc {
   static const String CHIP_COLOR = 'chipClr';
   static const String ANIM_PROGRESS_COLOR = 'progressClr';
   static const String ANIM_END_COLOR = 'endClr';
+
+  static const String CARD_VAL_IMG = 'cvi';
+  static const String BLANK_CARD_IMG = 'bci';
+  static const String WINNER_IMG = 'wi';
+  static const String CHIP_STAR_IMG = 'csi';
 
   static AnimationBloc _animationBloc;
 
@@ -41,10 +47,91 @@ class AnimationBloc {
     return _chipKey[key];
   }
 
-  Widget getAssetImage(String location) {
-       /*return Image.network('https://lh3.googleusercontent.com/a-/AAuE7mDK-hzjK6k1V5uBph6sIxbmSdvsQfmt8TqUpZnNzQ=s96-c'
-       ,fit: BoxFit.contain,);*/
-       return Image.asset(location,fit: BoxFit.contain,);
-  } 
+  Widget getSimpleAssetImage(
+      Color blendColor, BlendMode blendMode, CardModel card, String imgType) {
+    if (imgType == CARD_VAL_IMG && null != card && _isNotEmpty(card.value)) {
+      if (card.value == 'wild') {
+        return getAssetImage(blendColor, blendMode, card, imgType);
+      } else {
+        String cardLetter = card.value.substring(0, card.value.length - 1);
 
+        String suite = card.value[card.value.length - 1];
+        Color col = (suite == 'D' || suite == 'H') ? Colors.red : Colors.black;
+        return Container(
+          color: blendColor,
+          child: Flex(
+            direction: Axis.vertical,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Flexible(
+                child: Container(
+                    margin: EdgeInsets.only(left: 2),
+                   child:Text(
+                  cardLetter,
+                  style: TextStyle(color: col, fontWeight: FontWeight.bold,fontSize: 25),
+                )
+                ),
+              ),
+              Flexible(
+                child: Container(
+                  margin: EdgeInsets.fromLTRB(17,0,0,2),
+                  width: 20,
+                  height: 20,
+                  alignment: Alignment.bottomRight,
+                  child: _getImg('assets/suites/' + suite + '.png', null, null),
+                ),
+              )
+            ],
+          ),
+        );
+      }
+    }
+    return Container(
+      width: 0,
+      height: 0,
+    );
+  }
+
+  Widget getAssetImage(
+      Color blendColor, BlendMode blendMode, CardModel card, String imgType) {
+    String location;
+    if (imgType == CARD_VAL_IMG && null != card && _isNotEmpty(card.value)) {
+      location = 'assets/cards/' + card.value + '.png';
+    } else if (imgType == BLANK_CARD_IMG) {
+      location = 'assets/cards/purple_back.png';
+    } else if (imgType == CHIP_STAR_IMG) {
+      location = 'assets/chips/white-star.png';
+    } else if (imgType == WINNER_IMG) {
+      location = 'assets/images/Winner.png';
+    }
+    if (_isNotEmpty(location)) {
+      return _getImg(location, blendColor, blendMode);
+    }
+
+    return Container(
+      width: 0,
+      height: 0,
+    );
+  }
+
+  Widget _getImg(String location, Color blendColor, BlendMode blendMode) {
+    if (null != blendColor && null != blendMode) {
+      return Image.asset(
+        location,
+        fit: BoxFit.contain,
+        color: blendColor,
+        colorBlendMode: blendMode,
+      );
+    }
+    return Image.asset(
+      location,
+      fit: BoxFit.contain,
+    );
+  }
+
+  bool _isNotEmpty(String s) {
+    return s != null && s.trim().length > 0;
+  }
 }

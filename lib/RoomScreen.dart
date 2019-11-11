@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:sequence/CustomAppBar.dart';
+import 'package:sequence/blocs/CardBloc.dart';
 import 'package:sequence/blocs/FirebaseDBListener.dart';
 import 'package:sequence/blocs/GameBloc.dart';
 import 'package:sequence/blocs/GameController.dart';
@@ -28,6 +30,7 @@ class _RoomScreenState extends State<RoomScreen> {
     FirebaseDBListener().listenForAllRooms();
     GameController().setOtherPlayerDetails(null);
     SystemControl().alwaysScreenLit();
+    CardBloc().openController();
   }
 
   @override
@@ -35,6 +38,7 @@ class _RoomScreenState extends State<RoomScreen> {
     FirebaseDBListener().closeAllSubs();
     GameBloc().closeController();
     GameController().closeResetGameController();
+    CardBloc().closeController();
     _textEditingController?.dispose();
     super.dispose();
   }
@@ -77,7 +81,6 @@ class _RoomScreenState extends State<RoomScreen> {
           } else if (snap.data is List) {
             list = snap.data;
           }
-          // print('room list '+list.toString());
           return ConstrainedBox(
               constraints: BoxConstraints(
                   minWidth: 0,
@@ -102,6 +105,7 @@ class _RoomScreenState extends State<RoomScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: CustomAppBar('Sequence',false),
       key: _scaffoldKey,
       backgroundColor: GameConstants.bgColor,
       body: Flex(

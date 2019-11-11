@@ -65,7 +65,6 @@ class _LastCardState extends State<LastCard> {
 
   @override
   void dispose() {
-    print('last card dispose called');
     _lastCardSubs?.cancel();
     super.dispose();
   }

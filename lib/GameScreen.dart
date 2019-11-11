@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:sequence/CustomAppBar.dart';
 import 'package:sequence/GameBoard.dart';
 import 'package:sequence/GameResult.dart';
 import 'package:sequence/PlayerTurn.dart';
@@ -14,7 +15,6 @@ import 'package:sequence/blocs/UserBloc.dart';
 import 'package:sequence/cards/LastCard.dart';
 import 'package:sequence/constants/GameConstants.dart';
 import 'package:sequence/firebasedb/FirebaseRealtimeDB.dart';
-import 'package:sequence/model/BlocModel.dart';
 import 'package:sequence/model/FirebaseDBModel.dart';
 import 'package:sequence/model/RoomModel.dart';
 import 'package:sequence/model/UserModel.dart';
@@ -35,11 +35,7 @@ class _GameScreenState extends State<GameScreen> {
 
   StreamSubscription _userWonSubs;
 
-  StreamSubscription _animSubs;
-
   StreamSubscription _roomSubs;
-
-  bool _gameWon = false;
 
   RoomModel _model;
 
@@ -51,16 +47,20 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   checkForRoomRemoval() {
-      _roomSubs = FirebaseDBListener().getController().stream.where((item) => item.type == FirebaseDBModel.ROOM)
-      .listen((data) {
-          if(null!=data && null!=data.data && data.data is List<RoomModel>) {
-                   List<RoomModel> list = data.data;
-                   int index = list.indexWhere((item) => item.id == GameController().getRoomDetails().id);
-                   if(index <0  && this.mounted) {
-                          GameController().popScreen(context, GameConstants.RESET_DATA);
-                   }
-          }
-      });
+    _roomSubs = FirebaseDBListener()
+        .getController()
+        .stream
+        .where((item) => item.type == FirebaseDBModel.ROOM)
+        .listen((data) {
+      if (null != data && null != data.data && data.data is List<RoomModel>) {
+        List<RoomModel> list = data.data;
+        int index = list.indexWhere(
+            (item) => item.id == GameController().getRoomDetails().id);
+        if (index < 0 && this.mounted) {
+          GameController().popScreen(context, GameConstants.RESET_DATA);
+        }
+      }
+    });
   }
 
   openSubs() {
@@ -70,7 +70,7 @@ class _GameScreenState extends State<GameScreen> {
           .stream
           .where((item) =>
               item.type == FirebaseDBModel.USER_LEFT &&
-              !_gameWon &&
+              !doesGameHasResult() &&
               this.mounted)
           .listen((data) {
         String msg;
@@ -85,28 +85,24 @@ class _GameScreenState extends State<GameScreen> {
         if (id == UserBloc().getCurrUser().id) {
           msg = 'You got disconnected';
         } else {
-          msg = (name != null) ? name : 'User' + ' left the game';
+          msg = (name != null) ? name + ' left the game' : 'User left the game';
         }
         GameController().showToast(msg);
         GameController().popScreen(context, GameConstants.REMOVE_USER);
       });
-
-      _userWonSubs = FirebaseDBListener()
-          .getController()
-          .stream
-          .where((item) => (item.type == FirebaseDBModel.ROOM_DETAILS))
-          .listen((data) {
-        if (GameController().getAnimRunning()) {
-          _gameWon = data.data.status == RoomModel.GAME_WON;
-          _model = data.data;
-        } else {
-          setState(() {
-            _gameWon = data.data.status == RoomModel.GAME_WON;
-            _model = data.data;
-          });
-        }
-      });
     }
+  }
+
+  _listenForGameWon() {
+    _userWonSubs = FirebaseDBListener()
+        .getController()
+        .stream
+        .where((item) => (item.type == FirebaseDBModel.ROOM_DETAILS))
+        .listen((data) {
+      setState(() {
+        _model = data.data;
+      });
+    });
   }
 
   @override
@@ -120,18 +116,7 @@ class _GameScreenState extends State<GameScreen> {
     openSubs();
     CheckSequenceBloc().setInitSeqCount();
 
-    _animSubs = GameBloc()
-        .getController()
-        .stream
-        .where((item) => (item.cardType == BlocModel.BOARD_CARD &&
-            item.type == BlocModel.SEQ_COMPLETED_ANIM &&
-            _gameWon))
-        .listen((_) {
-      setState(() {
-        _gameWon = true;
-        _model = _model;
-      });
-    });
+    _listenForGameWon();
 
     WidgetsBinding.instance.addPostFrameCallback((_) => FirebaseDBListener()
         .listenForBoardCardChanges(GameController().getRoomDetails().id));
@@ -141,9 +126,13 @@ class _GameScreenState extends State<GameScreen> {
   void dispose() {
     _userLeftSubs?.cancel();
     _userWonSubs?.cancel();
-    _animSubs?.cancel();
     _roomSubs?.cancel();
     super.dispose();
+  }
+
+  bool doesGameHasResult() {
+    return GameController().getRoomDetails().status == RoomModel.GAME_WON ||
+        GameController().getRoomDetails().status == RoomModel.GAME_DRAW;
   }
 
   Widget _dialogButtons(String name, BuildContext context) {
@@ -154,7 +143,7 @@ class _GameScreenState extends State<GameScreen> {
       },
     );
   }
-  
+
   Future<bool> _showAlertDialog(BuildContext context) async {
     dynamic val = await showDialog(
         context: context,
@@ -162,11 +151,19 @@ class _GameScreenState extends State<GameScreen> {
           return AlertDialog(
             title: Column(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-               children: <Widget>[
-                  Text('Exit Game?',style: TextStyle(color: Colors.blue),),
-                  Text("You'll lose the game if you discard",style: TextStyle(color: Colors.grey,fontSize: 17
-                  ,fontStyle: FontStyle.italic),)
-               ],
+              children: <Widget>[
+                Text(
+                  'Exit Game?',
+                  style: TextStyle(color: Colors.blue),
+                ),
+                Text(
+                  "You'll lose the game if you discard",
+                  style: TextStyle(
+                      color: Colors.grey,
+                      fontSize: 17,
+                      fontStyle: FontStyle.italic),
+                )
+              ],
             ),
             actions: <Widget>[
               _dialogButtons('Cancel', context),
@@ -184,7 +181,7 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   Future<bool> _onWillPop() {
-    if (_gameWon) {
+    if (doesGameHasResult()) {
       return Future.value(true);
     }
     return _showAlertDialog(context);
@@ -196,6 +193,7 @@ class _GameScreenState extends State<GameScreen> {
       onWillPop: _onWillPop,
       child: SafeArea(
         child: Scaffold(
+            appBar: CustomAppBar('Sequence',true),
             backgroundColor: GameConstants.bgColor,
             body: Stack(
               children: <Widget>[
@@ -203,7 +201,7 @@ class _GameScreenState extends State<GameScreen> {
                   direction: Axis.vertical,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
-                    PlayerTurn(),
+                  //  PlayerTurn(),
                     Flexible(
                       flex: 7,
                       child: Align(
@@ -245,7 +243,12 @@ class _GameScreenState extends State<GameScreen> {
                     GameCardPanel(widget.panelList)
                   ],
                 ),
-                (_model!= null)?GameResult(_model):Container(width: 0,height: 0,)
+                (_model != null)
+                    ? GameResult(_model)
+                    : Container(
+                        width: 0,
+                        height: 0,
+                      )
               ],
             )),
       ),

@@ -24,16 +24,6 @@ class GameCardPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-   /* return Container(
-            width: GameBloc().getCardPanel(panelList).length*0.09*MediaQuery.of(context).size.width,
-            height: 0.07 * MediaQuery.of(context).size.height,
-            margin: EdgeInsets.only(bottom: 4),
-            child: Flex(
-              direction: Axis.horizontal,
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: _getCardPanel(GameBloc().getCardPanel(panelList)),
-            ),
-          );*/
     return StreamBuilder(
       initialData: GameBloc().getCardPanel(panelList),
       stream: GameController()

@@ -33,7 +33,7 @@ class RoomDetails extends StatelessWidget {
        },
        child: GestureDetector(
       child: Container(
-        margin: EdgeInsets.only(left: 20),
+        margin: EdgeInsets.symmetric(vertical: 10.0,horizontal: 10.0),
         padding: EdgeInsets.all(10),
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),

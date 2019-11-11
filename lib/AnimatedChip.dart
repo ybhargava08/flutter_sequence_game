@@ -26,6 +26,8 @@ class _AnimatedChipState extends State<AnimatedChip>
   Animation _sizeAnimation;
   AnimationController _controller;
 
+  CardModel _lastCard;
+
   bool _showAnim = false;
 
   static const double _chipSize = 23;
@@ -48,11 +50,15 @@ class _AnimatedChipState extends State<AnimatedChip>
               item.data.from == widget.user.id)
           .listen((data) {
         CardModel model = data.data;
+
         if (model.isRemovedJ1) {
           GameBloc().addToController(BlocModel(model.position,
               BlocModel.BOARD_CARD, BlocModel.OTHER_PLAYER_CARD, model));
         } else {
-          _doAnim(model);
+          if (_lastCard == null || _lastCard.position != model.position && model.time > _lastCard.time) {
+            _lastCard = model; 
+            _doAnim(model);
+          }
         }
       });
     }
@@ -93,12 +99,12 @@ class _AnimatedChipState extends State<AnimatedChip>
   _doAnim(CardModel cardModel) {
     GameController().setAnimRunning(true);
     Offset endPos = _calcEndPos(cardModel);
-    _controller = AnimationController(
-        vsync: this, duration: Duration(milliseconds: 600));
+    _controller =
+        AnimationController(vsync: this, duration: Duration(milliseconds: 600));
     _sizeAnimation = Tween(begin: 2.5, end: 1.0)
         .animate(CurvedAnimation(parent: _controller, curve: Curves.ease));
-    _posAnimation = Tween(begin: Offset(0, 0), end: endPos)
-        .animate(CurvedAnimation(parent: _controller, curve: Curves.decelerate));
+    _posAnimation = Tween(begin: Offset(0, 0), end: endPos).animate(
+        CurvedAnimation(parent: _controller, curve: Curves.decelerate));
     _controller.forward();
     setState(() {
       _showAnim = true;
@@ -121,6 +127,7 @@ class _AnimatedChipState extends State<AnimatedChip>
   void dispose() {
     super.dispose();
     _subs?.cancel();
+    _lastCard = null;
     _controller?.dispose();
   }
 

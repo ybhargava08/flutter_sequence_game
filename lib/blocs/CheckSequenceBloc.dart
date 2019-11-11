@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:sequence/blocs/FirebaseDBListener.dart';
 import 'package:sequence/blocs/GameBloc.dart';
 import 'package:sequence/blocs/GameController.dart';
 import 'package:sequence/blocs/SystemControl.dart';
@@ -8,6 +9,7 @@ import 'package:sequence/firebasedb/FirebaseRealtimeDB.dart';
 import 'package:sequence/firebasedb/FirestoreDB.dart';
 import 'package:sequence/model/BlocModel.dart';
 import 'package:sequence/model/CardModel.dart';
+import 'package:sequence/model/FirebaseDBModel.dart';
 import 'package:sequence/model/RoomModel.dart';
 
 class CheckSequenceBloc {
@@ -39,27 +41,46 @@ class CheckSequenceBloc {
   static int existingSeqCardIncluded = 0;
   static int count = 0;
 
-  List<String> seqTypes = [VERT_TOP,VERT_BOTTOM,HORI_LEFT,HORI_RIGHT,TOP_LEFT,BOTTOM_LEFT,TOP_RIGHT,BOTTOM_RIGHT];
+  List<String> seqTypes = [
+    VERT_TOP,
+    VERT_BOTTOM,
+    HORI_LEFT,
+    HORI_RIGHT,
+    TOP_LEFT,
+    BOTTOM_LEFT,
+    TOP_RIGHT,
+    BOTTOM_RIGHT
+  ];
 
-  checkForSequence(CardModel card,bool updateFirestore) {
-           int seqCount =0;
-           for(String type in seqTypes) {
-                seqCount = checkIfSequenceCompleted(card, updateFirestore, type, seqCount);
-                if(seqCount >= maxSequence) {
-                    break;
-                }
-           }
+  checkForSequence(CardModel card, bool updateFirestore) {
+    int seqCount = 0;
+    bool isPartOfSeq = card.isPartOfSeq;
+    
+    card.isPartOfSeq = false;
+    GameBloc().setCardInIndexMap(card.position, card);
+    for (String type in seqTypes) {
+      seqCount =
+          checkIfSequenceCompleted(card, updateFirestore, type, seqCount);
+      if (seqCount >= maxSequence) {
+        break;
+      }
+    }
+    card.isPartOfSeq = isPartOfSeq;
+    GameBloc().setCardInIndexMap(card.position, card);
   }
 
-  int checkIfSequenceCompleted(CardModel currCard, bool updateFirestore,String type,int count) {
-    
+  int checkIfSequenceCompleted(
+      CardModel currCard, bool updateFirestore, String type, int count) {
+
     List<String> result = findSeq(currCard, type);
+
+     
 
     if (result != null && result.length > 0) {
       SystemControl().playSound('sound/sequence_completed.mp3');
       SystemControl().doVibrate(2000);
       result.forEach((pos) {
-        CardModel card = GameBloc().getCardFromMap(pos);
+        CardModel card = GameBloc().getCardFromIndexMap(pos);
         card.isPartOfSeq = true;
         GameBloc().setCardInIndexMap(card.position, card);
         if (updateFirestore) {
@@ -76,29 +97,35 @@ class CheckSequenceBloc {
         FirebaseRealtimeDB()
             .setGameSeqCount(currCard.from, _sequenceCount[currCard.from]);
         if (_sequenceCount[currCard.from] >= maxSequence) {
+          GameController().getRoomDetails().status = RoomModel.GAME_WON;
+          GameController().getRoomDetails().winner =
+              (currCard.from == UserBloc().getCurrUser().id)
+                  ? UserBloc().getCurrUser().name
+                  : GameController().getOtherPlayerDetails().name;
+          GameController().getRoomDetails().winnerPhotoUrl =
+              (currCard.from == UserBloc().getCurrUser().id)
+                  ? UserBloc().getCurrUser().photoUrl
+                  : GameController().getOtherPlayerDetails().photoUrl;
+
           if (updateFirestore) {
-            GameController().getRoomDetails().status = RoomModel.GAME_WON;
-            GameController().getRoomDetails().winner =
-                (currCard.from == UserBloc().getCurrUser().id)
-                    ? UserBloc().getCurrUser().name
-                    : GameController().getOtherPlayerDetails().name;
-            GameController().getRoomDetails().winnerPhotoUrl =
-                (currCard.from == UserBloc().getCurrUser().id)
-                    ? UserBloc().getCurrUser().photoUrl
-                    : GameController().getOtherPlayerDetails().photoUrl;
             FirebaseRealtimeDB().setGameRoom(GameController().getRoomDetails());
-            
+
             FirebaseRealtimeDB().setScoreCard(currCard.from);
-          
           }
+          sendGameWonNotification();
         }
       });
-      return count+1;
+      return count + 1;
     } else {
-      print('seq not formed');
       return count;
     }
-    
+  }
+
+  sendGameWonNotification() async {
+    await Future.delayed(
+        Duration(milliseconds: 1300),
+        () => FirebaseDBListener().addToController(FirebaseDBModel(
+            FirebaseDBModel.ROOM_DETAILS, GameController().getRoomDetails())));
   }
 
   setInitSeqCount() async {
@@ -274,7 +301,7 @@ class CheckSequenceBloc {
       int row, int col, String color, String from, List<String> list) {
     if (isValid(row, col, color, from)) {
       String key = row.toString() + col.toString();
-      if (GameBloc().getCardFromMap(key).value == 'wild') {
+      if (GameBloc().getCardFromIndexMap(key).value == 'wild') {
         count += 2;
       } else {
         count++;
@@ -293,16 +320,16 @@ class CheckSequenceBloc {
         col >= 0 &&
         row < maxRows &&
         col < maxCols &&
-        GameBloc().getCardFromMap(key).isOnBoard &&
-        GameBloc().getCardFromMap(key).isChipPlaced &&
-        GameBloc().getCardFromMap(key).color == color &&
-        GameBloc().getCardFromMap(key).from == from;
+        GameBloc().getCardFromIndexMap(key).isOnBoard &&
+        GameBloc().getCardFromIndexMap(key).isChipPlaced &&
+        GameBloc().getCardFromIndexMap(key).color == color &&
+        GameBloc().getCardFromIndexMap(key).from == from;
     if (isValid &&
-        (GameBloc().getCardFromMap(key).isPartOfSeq &&
+        (GameBloc().getCardFromIndexMap(key).isPartOfSeq &&
             existingSeqCardIncluded == 0)) {
       existingSeqCardIncluded++;
       isValid = true;
-    } else if (isValid && !GameBloc().getCardFromMap(key).isPartOfSeq) {
+    } else if (isValid && !GameBloc().getCardFromIndexMap(key).isPartOfSeq) {
       isValid = true;
     } else {
       isValid = false;

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sequence/blocs/AnimationBloc.dart';
+import 'package:sequence/cards/CardStructure.dart';
 
 class BlankCard extends StatelessWidget {
 
@@ -13,7 +14,8 @@ class BlankCard extends StatelessWidget {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(5),
                 border: Border.all(color: Colors.black, width: 1)),
-            child:AnimationBloc().getAssetImage('assets/cards/purple_back.png'), 
+            child:CardStructure(AnimationBloc.BLANK_CARD_IMG, null,
+                  null, null), 
           ),
         );
   }

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:sequence/CustomAppBar.dart';
 import 'package:sequence/RouteConstants.dart';
 import 'package:sequence/blocs/FirebaseDBListener.dart';
 import 'package:sequence/blocs/GameController.dart';
@@ -205,6 +206,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Scaffold(
+          appBar: CustomAppBar('Sequence',false),
           backgroundColor: GameConstants.bgColor,
           body: Center(
             child: Container(
