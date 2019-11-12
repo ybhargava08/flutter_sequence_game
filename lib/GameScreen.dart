@@ -5,7 +5,6 @@ import 'package:flutter/widgets.dart';
 import 'package:sequence/CustomAppBar.dart';
 import 'package:sequence/GameBoard.dart';
 import 'package:sequence/GameResult.dart';
-import 'package:sequence/PlayerTurn.dart';
 import 'package:sequence/blocs/CheckSequenceBloc.dart';
 import 'package:sequence/blocs/FirebaseDBListener.dart';
 import 'package:sequence/blocs/GameController.dart';
@@ -38,6 +37,8 @@ class _GameScreenState extends State<GameScreen> {
   StreamSubscription _roomSubs;
 
   RoomModel _model;
+
+  double _appBarHeight = 70.0;
 
   doInit() {
     String roomId = GameController().getRoomDetails().id;
@@ -101,6 +102,10 @@ class _GameScreenState extends State<GameScreen> {
         .listen((data) {
       setState(() {
         _model = data.data;
+        if (_model.status == RoomModel.GAME_WON ||
+            _model.status == RoomModel.GAME_DRAW) {
+          _appBarHeight = 0.0;
+        }
       });
     });
   }
@@ -193,7 +198,7 @@ class _GameScreenState extends State<GameScreen> {
       onWillPop: _onWillPop,
       child: SafeArea(
         child: Scaffold(
-            appBar: CustomAppBar('Sequence',true),
+            appBar: CustomAppBar('Sequence', true, _appBarHeight),
             backgroundColor: GameConstants.bgColor,
             body: Stack(
               children: <Widget>[
@@ -201,7 +206,7 @@ class _GameScreenState extends State<GameScreen> {
                   direction: Axis.vertical,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
-                  //  PlayerTurn(),
+                    //  PlayerTurn(),
                     Flexible(
                       flex: 7,
                       child: Align(

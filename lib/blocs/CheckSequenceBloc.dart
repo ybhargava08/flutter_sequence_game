@@ -84,7 +84,10 @@ class CheckSequenceBloc {
         card.isPartOfSeq = true;
         GameBloc().setCardInIndexMap(card.position, card);
         if (updateFirestore) {
-          FirestoreDB().setBoardCard(card, false);
+          FirebaseRealtimeDB().setBoardCard(card);
+          if(card.position == currCard.position) {
+               FirestoreDB().setBoardCardFirestore(card, false);
+          }
         }
       });
       getNextPosForSeq(result, 500).listen((data) {

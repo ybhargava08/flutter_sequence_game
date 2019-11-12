@@ -34,6 +34,8 @@ dependencies:
   audioplayers: ^0.13.2
   wakelock: ^0.1.3
   vibration: ^1.2.2
+  flutter_launcher_icons: ^0.7.4
+
 
 dev_dependencies:
   flutter_test:
@@ -58,6 +60,13 @@ flutter:
     - assets/sound/
     - assets/images/
     - assets/suites/
+    - assets/launcher/
+
+flutter_icons:
+  ios: true
+  android: true
+  image_path_ios: "assets/launcher/seq_logo.jpg"
+  image_path_android: "assets/launcher/seq_logo.jpg"
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

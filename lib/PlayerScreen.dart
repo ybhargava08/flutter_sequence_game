@@ -206,7 +206,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Scaffold(
-          appBar: CustomAppBar('Sequence',false),
+          appBar: CustomAppBar('Sequence',false,70.0),
           backgroundColor: GameConstants.bgColor,
           body: Center(
             child: Container(
@@ -224,6 +224,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                   ),
                   Flex(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     direction: Axis.horizontal,
                     children: <Widget>[
                       Flexible(

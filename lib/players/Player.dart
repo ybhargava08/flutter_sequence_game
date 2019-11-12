@@ -23,76 +23,82 @@ class Player extends StatelessWidget {
     );
   }
 
-  List<Widget> getChildWidgets() {
-       List<Widget> list = List();
-       list.add(getPlayerWidget());
-       if(null!=user && null!=GameController().getOtherPlayerDetails() && user.id == GameController().getOtherPlayerDetails().id) {
-            list.add(getChipWidget());
-       }else{
-         list.insert(0, getChipWidget());
-       }
-       return list;
+  List<Widget> getChildWidgets(BuildContext context) {
+    List<Widget> list = List();
+    list.add(getPlayerWidget(context));
+    if (null != user &&
+        null != GameController().getOtherPlayerDetails() &&
+        user.id == GameController().getOtherPlayerDetails().id) {
+      list.add(getChipWidget());
+    } else {
+      list.insert(0, getChipWidget());
+    }
+    return list;
   }
 
   Widget getChipWidget() {
-      return showChip
-          ? _showAnimChip()
-          : Container(
-              width: 0,
-              height: 0,
-            );
+    return showChip
+        ? _showAnimChip()
+        : Container(
+            width: 0,
+            height: 0,
+          );
   }
 
-  Widget getPlayerWidget() {
-       return Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: <Widget>[
-          StreamBuilder(
-            initialData: GameController().getPlayerTurn(),
-            stream: FirebaseDBListener()
-                .getController()
-                .stream
-                .where((item) => item.type == FirebaseDBModel.PLAYER_TURN),
-            builder: (BuildContext context, AsyncSnapshot snap) {
-              if (snap.hasData) {
-                String id;
-                if (snap.data is String) {
-                  id = snap.data;
-                } else if (snap.data is FirebaseDBModel) {
-                  id = snap.data.data;
-                }
-                return Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: (id == user.id && showChip)
-                          ? Border.all(color: Colors.cyanAccent, width: 3)
-                          : Border.all(width: 0),
-                      image: DecorationImage(
-                        image: NetworkImage(user.photoUrl),
-                      )),
-                );
+  Widget getPlayerWidget(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: <Widget>[
+        StreamBuilder(
+          initialData: GameController().getPlayerTurn(),
+          stream: FirebaseDBListener()
+              .getController()
+              .stream
+              .where((item) => item.type == FirebaseDBModel.PLAYER_TURN),
+          builder: (BuildContext context, AsyncSnapshot snap) {
+            if (snap.hasData) {
+              String id;
+              if (snap.data is String) {
+                id = snap.data;
+              } else if (snap.data is FirebaseDBModel) {
+                id = snap.data.data;
               }
               return Container(
                 width: 60,
                 height: 60,
                 decoration: BoxDecoration(
                     shape: BoxShape.circle,
+                    border: (id == user.id && showChip)
+                        ? Border.all(color: Colors.cyanAccent, width: 3)
+                        : Border.all(width: 0),
                     image: DecorationImage(
                       image: NetworkImage(user.photoUrl),
                     )),
               );
-            },
-          ),
-          showChip
-              ? Container(
-                  width: 0,
-                  height: 0,
-                )
-              : Container(
-                  margin: EdgeInsets.fromLTRB(20, 20, 0, 0),
-                  width: 130,
+            }
+            return Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  image: DecorationImage(
+                    image: NetworkImage(user.photoUrl),
+                  )),
+            );
+          },
+        ),
+        showChip
+            ? Container(
+                width: 0,
+                height: 0,
+              )
+            : ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: 0.4 * MediaQuery.of(context).size.width,
+                  minWidth: 0,
+                ),
+                child: Container(
+                  margin: EdgeInsets.only(top: 20),
                   child: Text(
                     user.name,
                     style: TextStyle(
@@ -100,13 +106,10 @@ class Player extends StatelessWidget {
                         fontSize: 20,
                         fontWeight: FontWeight.w500),
                   ),
-                )
-        ],
-      );
-  }
-
-  Widget _getUser() {
-    return Row(children: getChildWidgets());
+                ),
+              )
+      ],
+    );
   }
 
   @override
@@ -116,7 +119,7 @@ class Player extends StatelessWidget {
             margin: user.id == UserBloc().getCurrUser().id
                 ? EdgeInsets.only(left: 40)
                 : EdgeInsets.only(right: 40),
-            child: _getUser(),
+            child: Row(children: getChildWidgets(context)),
           )
         : Container(
             width: 0,

@@ -105,7 +105,7 @@ class _RoomScreenState extends State<RoomScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar('Sequence',false),
+      appBar: CustomAppBar('Sequence',false,70.0),
       key: _scaffoldKey,
       backgroundColor: GameConstants.bgColor,
       body: Flex(

@@ -11,13 +11,15 @@ class CustomAppBar extends StatefulWidget implements PreferredSizeWidget {
   final String title;
   final bool isGameScreen;
 
-  CustomAppBar(this.title, this.isGameScreen);
+  final double height;
+
+  CustomAppBar(this.title, this.isGameScreen,this.height);
 
   @override
   State<StatefulWidget> createState() => _CustomAppBarState();
 
   @override
-  Size get preferredSize => Size.fromHeight(50.0);
+  Size get preferredSize => Size.fromHeight(height);
 }
 
 class _CustomAppBarState extends State<CustomAppBar> {
@@ -72,7 +74,7 @@ class _CustomAppBarState extends State<CustomAppBar> {
               flex: 6,
                 child: Container(
               margin: EdgeInsets.only(left: 15),
-              padding: EdgeInsets.symmetric(vertical: 10),
+              padding: EdgeInsets.symmetric(vertical: 15),
               child: Text(_title,
                   style: TextStyle(
                       color: Colors.white,

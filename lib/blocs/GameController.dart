@@ -7,7 +7,6 @@ import 'package:sequence/blocs/GameBloc.dart';
 import 'package:sequence/blocs/UserBloc.dart';
 import 'package:sequence/constants/GameConstants.dart';
 import 'package:sequence/firebasedb/FirebaseRealtimeDB.dart';
-import 'package:sequence/firebasedb/FirestoreDB.dart';
 import 'package:sequence/model/CardModel.dart';
 import 'package:sequence/model/ResetGameModel.dart';
 import 'package:sequence/model/RoomModel.dart';
@@ -62,13 +61,14 @@ class GameController {
       return _otherPlayerDetails;
     }
     /*UserModel user = UserModel(
-        UserBloc().getCurrUser().name,
+        /*UserBloc().getCurrUser().name*/'Yash Bhargava',
         UserBloc().getCurrUser().photoUrl,
         '99999',
         UserBloc().getCurrUser().email,
         'teal');
     return user;*/
-    return UserBloc().getCurrUser();
+  //  return UserBloc().getCurrUser();
+    return null;
   }
 
   setRoomDetails(RoomModel model) {
@@ -132,7 +132,6 @@ class GameController {
 
   removeRoomDetails(String roomId) async {
     await FirebaseRealtimeDB().removeGame(roomId);
-    await FirestoreDB().removeAllBoardCards(roomId);
   }
 
   showToast(String msg) {
@@ -217,10 +216,10 @@ class GameController {
           .removeUser(getRoomDetails().id, UserBloc().getCurrUser().id);
           
     }else if(data == GameConstants.REMOVE_GAME) {
-         GameController().removeRoomDetails(GameController().getRoomDetails().id);
+        await GameController().removeRoomDetails(GameController().getRoomDetails().id);
     }else if(data == GameConstants.REMOVE_GAME_DISCARD) {
          await FirebaseRealtimeDB().setScoreCard(GameController().getOtherPlayerDetails().id);
-      GameController().removeRoomDetails(GameController().getRoomDetails().id);
+     await GameController().removeRoomDetails(GameController().getRoomDetails().id);
     }
     _resetData();
   }

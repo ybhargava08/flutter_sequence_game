@@ -16,8 +16,9 @@ class SystemControl {
   AudioPlayer _audioPlayer;
 
   playSound(String mp3) async {
-    stopSound();
+          stopSound();
     _audioPlayer = await _audioCache.play(mp3, mode: PlayerMode.LOW_LATENCY);
+    
   }
 
   stopSound() {

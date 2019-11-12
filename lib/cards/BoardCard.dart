@@ -44,7 +44,7 @@ class _BoardCardState extends State<BoardCard>
   Animation _j1RemoveAnim;
 
   setInitBoardState() {
-    FirestoreDB().getInitBoardCard(_boardCardModel.position).then((data) {
+    FirebaseRealtimeDB().getInitBoardCard(_boardCardModel.position).then((data) {
       if (null != data && this.mounted) {
         setState(() {
           _boardCardModel = data;
@@ -161,7 +161,10 @@ class _BoardCardState extends State<BoardCard>
         .then((data) {
       GameBloc().replaceMissingPanelCard(data);
     });
-    FirestoreDB().setBoardCard(newModel, !isCardAdd);
+    FirestoreDB().setBoardCardFirestore(newModel, false).then((_) {
+        FirebaseRealtimeDB().setBoardCard(newModel);
+    });
+    
 
     _placedCardOnBoard(newModel, isCardAdd, false, true);
   }
@@ -174,6 +177,7 @@ class _BoardCardState extends State<BoardCard>
     setState(() {
       _boardCardModel = model;
     });
+    
     if (checkForSeqCompletion) {
       CheckSequenceBloc().checkForSequence(model, updateFirebase);
     }
@@ -181,12 +185,10 @@ class _BoardCardState extends State<BoardCard>
       _doJ1Anim();
     }
     if (!updateFirebase) {
-      String playerId = (model.from == UserBloc().getCurrUser().id)
-          ? GameController().getOtherPlayerDetails().id
-          : UserBloc().getCurrUser().id;
-      FirebaseRealtimeDB()
-          .setPlayerTurn(playerId, GameController().getRoomDetails().id);
+      FirebaseRealtimeDB().setPlayerTurn(
+          UserBloc().getCurrUser().id, GameController().getRoomDetails().id);
     }
+    
   }
 
   Color _getBlendColor() {

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:sequence/blocs/GameController.dart';
+import 'package:sequence/blocs/UserBloc.dart';
 import 'package:sequence/firebasedb/DBConstants.dart';
 import 'package:sequence/model/CardModel.dart';
 
@@ -24,19 +25,19 @@ class FirestoreDB {
         return _getRoomRef(roomId).collection(DBConstants.BOARD_CARD);
     }
 
-    setBoardCard(CardModel card,bool merge) async {
-        await getBoardCardRef(null).document(card.position).setData(card.toJson(),merge: merge);
+    Future setBoardCardFirestore(CardModel card,bool merge) async {
+        await getBoardCardRef(null).document(UserBloc().getCurrUser().id).setData(card.toJson(),merge: merge);
     }
 
-    Future<CardModel> getInitBoardCard(String position) async {
+   /* Future<CardModel> getInitBoardCard(String position) async {
          DocumentSnapshot snap = await getBoardCardRef(null).document(position).get();
          if(snap !=null && snap.data!=null) {
                return CardModel.fromDocumentSnapshot(snap);
          }
        return null;    
-    }
+    }*/
 
-    Future removeAllBoardCards(String roomId) async {
+    Future removeAllBoardCardsFirestore(String roomId) async {
         QuerySnapshot querySnapshot =  await getBoardCardRef(roomId).getDocuments();
         if(null!=querySnapshot) {
              querySnapshot.documents.forEach((doc)async{

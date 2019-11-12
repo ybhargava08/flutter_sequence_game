@@ -23,7 +23,21 @@ class _LastCardState extends State<LastCard> {
 
   @override
   void initState() {
-    FirestoreDB()
+    if (null != GameController().getOtherPlayerDetails() &&
+        null != GameController().getOtherPlayerDetails().id) {
+      FirestoreDB()
+          .getBoardCardRef(null)
+          .document(GameController().getOtherPlayerDetails().id)
+          .get()
+          .then((data) {
+        if (data != null && data.exists) {
+          CardModel model = CardModel.fromDocumentSnapshot(data);
+          setStateCard(model);
+        }
+      });
+    }
+
+    /*FirestoreDB()
         .getBoardCardRef(null)
         .where('from', isEqualTo: GameController().getOtherPlayerDetails().id)
         .orderBy('time', descending: true)
@@ -37,7 +51,7 @@ class _LastCardState extends State<LastCard> {
           setStateCard(model);
         }
       }
-    });
+    });*/
 
     _lastCardSubs = FirebaseDBListener()
         .getController()

@@ -4,6 +4,8 @@ import 'package:sequence/blocs/GameController.dart';
 import 'package:sequence/blocs/UserBloc.dart';
 import 'package:sequence/constants/GameConstants.dart';
 import 'package:sequence/firebasedb/DBConstants.dart';
+import 'package:sequence/firebasedb/FirestoreDB.dart';
+import 'package:sequence/model/CardModel.dart';
 import 'package:sequence/model/RoomModel.dart';
 import 'package:sequence/model/UserModel.dart';
 
@@ -57,6 +59,10 @@ class FirebaseRealtimeDB {
        return _database.reference().child(DBConstants.SCORE).child(child);
   }
 
+  DatabaseReference getBoardCardRef(String roomId) {
+          return getRoomRef(roomId).child(DBConstants.BOARD_CARD);
+  }
+
   setPanelCard(String panelCards) async {
     await getPanelCardRef(GameController().getRoomDetails().id)
         .set({'cards': panelCards});
@@ -78,6 +84,10 @@ class FirebaseRealtimeDB {
     await getPlayerTurnRef(roomId).set({'id': id});
   }
 
+  setBoardCard(CardModel card) async {
+       await getBoardCardRef(GameController().getRoomDetails().id).child(card.position).set(card.toJson());
+  }
+
   setScoreCard(String id) async {
       await FirebaseRealtimeDB().getScoreRef(GameBloc().getConcatenatedId(UserBloc().getCurrUser().id, 
             GameController().getOtherPlayerDetails().id)).child(id)
@@ -96,7 +106,7 @@ class FirebaseRealtimeDB {
       if (isInit && (data.value == null || '' == data.value)) {
         list = List.from(GameConstants.GAME_DECK);
         list.shuffle();
-       /* list = List.generate(108, (i) {
+        /*list = List.generate(108, (i) {
           /* if(i%2==0) {
                return 'J2';
            }else{
@@ -173,12 +183,26 @@ class FirebaseRealtimeDB {
      return null;
   }
 
+  Future<CardModel> getInitBoardCard(String position) async {
+      DataSnapshot snap=  await getBoardCardRef(GameController().getRoomDetails().id).child(position).once();
+      if(snap!=null && snap.value!=null) {
+           return CardModel.fromJson(snap.value);
+      }
+      return null;
+  }
+
   Future removeGame(String roomId) async {
     await getRoomRef(roomId).remove();
     await getAllRoomsRef().child(roomId).remove();
+    await removeBoardCards(roomId);
   }
 
   Future removeUser(String roomId,String userId) async {
        await getRoomUsersRef(roomId).child(userId).remove();
+  }
+
+  Future removeBoardCards(String roomId) async {
+       await getBoardCardRef(roomId).remove();
+       await FirestoreDB().removeAllBoardCardsFirestore(GameController().getRoomDetails().id);
   }
 }

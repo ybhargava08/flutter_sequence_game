@@ -61,28 +61,32 @@ class AnimationBloc {
           color: blendColor,
           child: Flex(
             direction: Axis.vertical,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               Flexible(
+                flex: 4,
                 child: Container(
-                    margin: EdgeInsets.only(left: 2),
-                   child:Text(
-                  cardLetter,
-                  style: TextStyle(color: col, fontWeight: FontWeight.bold,fontSize: 25),
-                )
-                ),
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      cardLetter,
+                      style: TextStyle(
+                          color: col,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 25),
+                    )),
               ),
               Flexible(
+                flex: 3,
                 child: Container(
-                  margin: EdgeInsets.fromLTRB(17,0,0,2),
+                  margin: EdgeInsets.fromLTRB(17, 0, 0, 2),
                   width: 20,
                   height: 20,
                   alignment: Alignment.bottomRight,
                   child: _getImg('assets/suites/' + suite + '.png', null, null),
                 ),
-              )
+              ),
             ],
           ),
         );
@@ -120,14 +124,12 @@ class AnimationBloc {
     if (null != blendColor && null != blendMode) {
       return Image.asset(
         location,
-        fit: BoxFit.contain,
         color: blendColor,
         colorBlendMode: blendMode,
       );
     }
     return Image.asset(
       location,
-      fit: BoxFit.contain,
     );
   }
 
