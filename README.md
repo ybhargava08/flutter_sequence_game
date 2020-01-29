@@ -2,7 +2,8 @@
 
 This project is an attempt to create 2 player sequence mobile game 
 
-- Some Screenshots in sequence_game_screenshots folder
+## App Screenshots 
+https://github.com/ybhargava08/flutter_sequence_game/tree/master/sequence_game_screenshots
 
 ## Design
 
